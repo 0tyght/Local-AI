@@ -15,6 +15,7 @@
     .spinner { width: 52px; height: 52px; margin: 26px auto; border: 5px solid #29344a; border-top-color: #7467ff; border-radius: 50%; animation: spin .8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     a { display: inline-block; margin-top: 10px; padding: 13px 22px; color: white; background: #5b4ff7; border-radius: 12px; text-decoration: none; font-weight: 700; }
+    .warning { color: #fecaca; background: #451a1a; border: 1px solid #7f1d1d; border-radius: 12px; padding: 14px; }
     small { display: block; margin-top: 20px; color: #70809a; }
   </style>
 </head>
@@ -43,8 +44,18 @@
           throw new Error("Invalid tunnel URL");
         }
         openButton.href = target.href;
+        openButton.target = "_blank";
+        openButton.rel = "noopener noreferrer";
         openButton.hidden = false;
         updated.textContent = state.updated_at ? `อัปเดตล่าสุด ${new Date(state.updated_at).toLocaleString("th-TH")}` : "";
+        const inAppBrowser = /FBAN|FBAV|Messenger|Instagram|Line\//i.test(navigator.userAgent);
+        if (inAppBrowser) {
+          spinner.hidden = true;
+          message.className = "warning";
+          message.textContent = "เบราว์เซอร์ในแอปนี้ไม่รองรับ session เข้าสู่ระบบ: แตะเมนู ⋯ แล้วเลือก ‘เปิดใน Safari’ หรือ ‘เปิดใน Chrome’";
+          openButton.textContent = "เปิด SiangTTS ในเบราว์เซอร์ภายนอก";
+          return;
+        }
         message.textContent = "พบเซิร์ฟเวอร์แล้ว กำลังเปิด…";
         setTimeout(() => window.location.replace(target.href), 900);
       } catch (error) {
@@ -57,4 +68,3 @@
   </script>
 </body>
 </html>
-
