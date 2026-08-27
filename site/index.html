@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>SiangTTS — กำลังเชื่อมต่อ</title>
+  <style>
+    :root { font-family: system-ui, "Noto Sans Thai", sans-serif; color: #f8fafc; background: #070b14; }
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 24px; }
+    main { width: min(520px, 100%); padding: 34px; border: 1px solid #263149; border-radius: 22px; background: #111827; box-shadow: 0 24px 80px #0008; text-align: center; }
+    h1 { margin: 0 0 8px; font-size: clamp(28px, 7vw, 42px); }
+    p { color: #aebbd0; line-height: 1.65; }
+    .spinner { width: 52px; height: 52px; margin: 26px auto; border: 5px solid #29344a; border-top-color: #7467ff; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    a { display: inline-block; margin-top: 10px; padding: 13px 22px; color: white; background: #5b4ff7; border-radius: 12px; text-decoration: none; font-weight: 700; }
+    small { display: block; margin-top: 20px; color: #70809a; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>SiangTTS</h1>
+    <p id="message">กำลังค้นหาเซิร์ฟเวอร์ล่าสุด…</p>
+    <div class="spinner" id="spinner" aria-label="กำลังโหลด"></div>
+    <a id="open" href="#" hidden>เปิด SiangTTS</a>
+    <small id="updated"></small>
+  </main>
+  <script>
+    const stateUrl = "https://raw.githubusercontent.com/0tyght/Local-AI/main/current.json";
+    const message = document.querySelector("#message");
+    const spinner = document.querySelector("#spinner");
+    const openButton = document.querySelector("#open");
+    const updated = document.querySelector("#updated");
+
+    async function connect() {
+      try {
+        const response = await fetch(`${stateUrl}?t=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`GitHub ${response.status}`);
+        const state = await response.json();
+        const target = new URL(state.url);
+        if (target.protocol !== "https:" || !target.hostname.endsWith(".trycloudflare.com")) {
+          throw new Error("Invalid tunnel URL");
+        }
+        openButton.href = target.href;
+        openButton.hidden = false;
+        updated.textContent = state.updated_at ? `อัปเดตล่าสุด ${new Date(state.updated_at).toLocaleString("th-TH")}` : "";
+        message.textContent = "พบเซิร์ฟเวอร์แล้ว กำลังเปิด…";
+        setTimeout(() => window.location.replace(target.href), 900);
+      } catch (error) {
+        spinner.hidden = true;
+        message.textContent = "ยังไม่พบเซิร์ฟเวอร์ กรุณาลองใหม่อีกครั้งในอีกสักครู่";
+        setTimeout(() => window.location.reload(), 10000);
+      }
+    }
+    connect();
+  </script>
+</body>
+</html>
+
